@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rt-manager
+  namespace: kube-system
+  labels:
+    k8s-app: rt-manager-app
+spec:
+  selector:
+    matchLabels:
+      name: fluentd-elasticsearch
+  template:
+    metadata:
+      labels:
+        name: rt-manage
+    spec:
+      containers:
+      - name: rt-manager
+        image: struharv/rt-manager
+        resources:
+          limits:
+            memory: 200Mi
+          requests:
+            cpu: 100m
+            memory: 200Mi
