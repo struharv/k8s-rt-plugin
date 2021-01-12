@@ -9,7 +9,7 @@ metadata:
     task-2: "200,300,4000"
 
 spec:
-  schedulerName: my-scheduler
+  schedulerName: rt-scheduler
   containers:
   - name: nginx
     image: nginx

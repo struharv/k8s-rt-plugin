@@ -1,4 +1,4 @@
-module k8s-scheduler-extender-example
+module k8s-rt-scheduler
 
 go 1.13
 

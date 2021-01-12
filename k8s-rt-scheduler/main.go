@@ -66,7 +66,10 @@ var (
 			var nodeUtilization = getNodeUtilization(node);
 			log.Print(pod.ObjectMeta.Annotations);
 			log.Print("Q,P, utilization, NodeUtilization", rtquota, rtperiod, utilization, nodeUtilization);
-			return true, nil
+			
+			
+			
+			return false, nil
 		},
 	}
 
@@ -109,7 +112,6 @@ func StringToLevel(levelStr string) colog.Level {
 	case "ALERT":
 		return colog.LAlert
 	default:
-		log.Printf("warning: LOG_LEVEL=\"%s\" is empty or invalid, fallling back to \"INFO\".\n", level)
 		return colog.LInfo
 	}
 }
@@ -198,8 +200,7 @@ func main() {
 	})
 	colog.Register()
 	level := StringToLevel(os.Getenv("LOG_LEVEL"))
-	log.Print("x Log level was set to ", strings.ToUpper(level.String()))
-	
+		
 	colog.SetMinLevel(level)
 
 	router := httprouter.New()
@@ -217,7 +218,7 @@ func main() {
 
 	AddBind(router, NoBind)
 
-	log.Print("info: server starting on the port!!! :80")
+	log.Print("info: server starting on the port! :80")
 	if err := http.ListenAndServe(":80", router); err != nil {
 		log.Fatal(err)
 	}
