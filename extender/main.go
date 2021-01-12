@@ -50,11 +50,22 @@ var (
 	RTPredicate = Predicate{
 		Name: "rt_predicate",
 		Func: func(pod v1.Pod, node v1.Node) (bool, error) {
-			//rt-budget = pod.ObjectMeta.Annotations["rt-budget"]
-		//	rt-period = pod.ObjectMeta.Annotations["rt-budget"]
-			//utilization = rt-budget / rt-period
 			
+			rtquota, err := strconv.ParseFloat(pod.ObjectMeta.Annotations["rt-quota"], 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+			
+			rtperiod, err := strconv.ParseFloat(pod.ObjectMeta.Annotations["rt-period"], 64)
+			if err != nil {
+				log.Fatal(err)
+			}
+			
+			
+			var utilization = rtquota / rtperiod
+			var nodeUtilization = getNodeUtilization(node);
 			log.Print(pod.ObjectMeta.Annotations);
+			log.Print("Q,P, utilization, NodeUtilization", rtquota, rtperiod, utilization, nodeUtilization);
 			return true, nil
 		},
 	}
@@ -131,20 +142,35 @@ func enoughUtilizationPredicate(node *v1.Node, pod *v1.Pod) bool {
 	return (pod.ObjectMeta.Name == "kube-gpu-1")
 }
 
-func getNodeUtilization(node *v1.Node) float64 {
+func getNodeUtilization(node v1.Node) float64 {
 	ann := node.ObjectMeta.Annotations
+	res := 0.0
 	if ann == nil {
 		return 0;
 	}
-	utilization := ann["utilization"]
+	deployedRT := ann["deployedRT"]
+	log.Print(deployedRT);
 	
-	i1, err := strconv.ParseFloat(utilization, 64)
-	if err != nil {
-		log.Fatal(err)
+	var containers = strings.Split(deployedRT, ";")
+	for cnt, cont := range containers {
+		log.Print("container", cont, cnt)
+		tmp := strings.ReplaceAll(cont, "(", "")
+		tmp = strings.ReplaceAll(tmp, ")", "")
+		param := strings.Split(tmp, ",")
+		
+		period, err := strconv.ParseFloat(param[0], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+		quota, err := strconv.ParseFloat(param[1], 64)
+		if err != nil {
+			log.Fatal(err)
+		}
+		utilization := quota/period;
+		log.Print(param, utilization)
+		res += utilization
 	}
-
-
-	return i1
+	return res
 }
 
 func updateNodeUtilization(node *v1.Node, utilization float64) {
